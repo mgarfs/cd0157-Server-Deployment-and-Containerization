@@ -110,39 +110,99 @@ $ curl --request GET 'http://localhost:8080/contents' -H "Authorization: Bearer 
 * Repeat app check from above but on port 80 - DONE
 
 
-### 3. Create an EKS cluster - IN PROGRESS
+### 3. Create an EKS cluster - DONE
 
 Start with creating an EKS cluster in your preferred region, using eksctl command. Create an IAM role that the Codebuild will assume to access your k8s/EKS cluster. This IAM role will have the necessary access permissions (attached JSON policies). Add IAM Role to the Kubernetes cluster's configMap.
 
 * Create an EKS Cluster - DONE - cf. `create_eks_cluster.sh`
 
+```
 kubectl get nodes
 error: You must be logged in to the server (Unauthorized)
+```
 
-* IAM Role for CodeBuild - 
+https://github.com/kubernetes-sigs/aws-iam-authenticator/issues/174
 
-* Get your AWS account id - DONE - `aws sts get-caller-identity --query Account --output text`
-* Update `trust.json` file - DONE
-* Create a role, 'UdacityFlaskDeployCBKubectlRole' - DONE - `aws iam create-role --role-name UdacityFlaskDeployCBKubectlRole --assume-role-policy-document file://trust.json --output text --query 'Role.Arn'`
+https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html
 
-arn:aws:iam::319372512713:role/UdacityFlaskDeployCBKubectlRole
+```
+export AWS_ACCESS_KEY_ID=<KEY>
+export AWS_SECRET_ACCESS_KEY=<SECRET-KEY>
+aws-iam-authenticator token -i <cluster-name>
 
-* Attach the iam-role-policy.json policy to the 'UdacityFlaskDeployCBKubectlRole' - DONE - `aws iam put-role-policy --role-name UdacityFlaskDeployCBKubectlRole --policy-name eks-describe --policy-document file://iam-role-policy.json`
+aws-iam-authenticator verify -t <k8s-aws-v1.really_long_token> -i <cluster-name>
 
+kubectl get nodes
+NAME                                          STATUS   ROLES    AGE   VERSION
+ip-192-168-32-94.us-east-2.compute.internal   Ready    <none>   12m   v1.23.9-eks-ba74326
+ip-192-168-81-8.us-east-2.compute.internal    Ready    <none>   12m   v1.23.9-eks-ba74326
+```
 
-* Authorize the CodeBuild using EKS RBAC - 
+* IAM Role for CodeBuild - STEPS:
 
+  - Get your AWS account id - DONE - `aws sts get-caller-identity --query Account --output text`
+  - Update `trust.json` file - DONE
+  - Create a role, 'UdacityFlaskDeployCBKubectlRole' - DONE - `aws iam create-role --role-name UdacityFlaskDeployCBKubectlRole --assume-role-policy-document file://trust.json --output text --query 'Role.Arn'`
+    
+    `arn:aws:iam::319372512713:role/UdacityFlaskDeployCBKubectlRole`
+
+  - Attach the iam-role-policy.json policy to the 'UdacityFlaskDeployCBKubectlRole' - DONE - `aws iam put-role-policy --role-name UdacityFlaskDeployCBKubectlRole --policy-name eks-describe --policy-document file://iam-role-policy.json`
+
+* Authorize the CodeBuild using EKS RBAC - STEPS:
+
+  - Fetch - Get the current configmap and save it to a file - DONE - `kubectl get -n kube-system configmap/aws-auth -o yaml > /tmp/aws-auth-patch.yml`
+  - Edit - Open the `aws-auth-patch.yml` file using any editor - DONE - `gvim /tmp/aws-auth-patch.yml`
+
+```
+  - groups:
+    - system:masters
+    rolearn: arn:aws:iam::<ACCOUNT_ID>:role/UdacityFlaskDeployCBKubectlRole
+    username: build 
+```
+
+  - Update - Update your cluster's configmap - DONE - `kubectl patch configmap/aws-auth -n kube-system --patch "$(cat /tmp/aws-auth-patch.yml)"`
+
+    `configmap/aws-auth patched`
 
 ### 4. Store a secret using AWS Parameter Store
-### 5. Create a CodePipeline pipeline triggered by GitHub checkins
+
+* Save a Secret in AWS Parameter Store - DONE - 
+```
+aws ssm put-parameter --name JWT_SECRET --overwrite --value "myjwtsecret" --type SecureString
+{
+    "Version": 1,
+    "Tier": "Standard"
+}
+
+aws ssm get-parameter --name JWT_SECRET
+{
+    "Parameter": {
+        "Name": "JWT_SECRET",
+        "Type": "SecureString",
+        "Value": "AQICAHjFn83p/zONLoIw5hSasXP7gYm+t/4NdjFfQ6Tb0boHhwEuxobOM66JoQGJ9cEct5/qAAAAaTBnBgkqhkiG9w0BBwagWjBYAgEAMFMGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMQ5hm8zOxYsp4q9oCAgEQgCaC/7TF5CqjnbQDdxMcA1Ro06D3yfqmO6cay5RAAugvBSoQ22eBjg==",
+        "Version": 1,
+        "LastModifiedDate": "2022-09-08T22:31:21.253000+02:00",
+        "ARN": "arn:aws:ssm:us-east-2:319372512713:parameter/JWT_SECRET",
+        "DataType": "text"
+    }
+}
+```
+
+### 5. Create a CodePipeline pipeline triggered by GitHub checkins - DONE
+
+* Generate a Github access token - DONE
+
+* Create Codebuild and CodePipeline resources using CloudFormation template - STEPS:
+
+  - Modify the template - DONE - `gvim ci-cd-codepipeline.cfn.yml`
+  - Review the resources - DONE
+  - Create Stack - DONE 
+
 ### 6. Create a CodeBuild stage which will build, test, and deploy your code
 
-* Generate a Github access token
-* Cenerate an access-token from your Github account. We will share this token with the Codebuild service so that it can listen to the the repository commits.
-* Create Codebuild and CodePipeline resources using CloudFormation template
-* Create a pipeline watching for commits to your Github repository using Cloudformation template (.yaml) file.
-* Set a Secret using AWS Parameter Store
-* In order to pass your JWT secret to the app in Kubernetes securely, you will set the JWT secret using AWS parameter store.
+* Configure `buildspec.yml` - DONE
+
+
 * Build and deploy
 * Finally, you will trigger the build based on a Github commit.
 

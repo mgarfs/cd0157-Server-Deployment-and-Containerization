@@ -29,3 +29,6 @@ htmlcov/
 .direnv
 
 .github/**
+
+# Downloadable executable
+aws-iam-authenticator

@@ -50,8 +50,9 @@ phases:
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --role-arn $EKS_KUBECTL_ROLE_ARN
       - export AWS_ACCESS_KEY_ID=AKIAUUXAVZXEQZRZMIOJ
       - export AWS_SECRET_ACCESS_KEY=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
-      - aws-iam-authenticator token -i simple_jwt_api
+      - export AWS_DEFAULT_REGION=us-east-2
       - export SIMPLE_JWT_API_TOKEN=`aws-iam-authenticator token -i simple_jwt_api | jq . | grep token | sed 's/.*"token". "\(.*\)"/\1/'`
+      - echo $SIMPLE_JWT_API_TOKEN
       - aws-iam-authenticator verify -t $SIMPLE_JWT_API_TOKEN -i simple_jwt_api
       - kubectl apply -f simple_jwt_api.yml 
       - printf '[{"name":"simple_jwt_api","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json

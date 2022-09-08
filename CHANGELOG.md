@@ -202,6 +202,17 @@ aws ssm get-parameter --name JWT_SECRET
 
 * Configure `buildspec.yml` - DONE
 * Build and deploy - DONE
-* Finally, you will trigger the build based on a Github commit. - TODO
+* Finally, you will trigger the build based on a Github commit. - IN PROGRESS
+
+
+Test your Endpoint - To test your API endpoints, get the external IP for your service:
+
+kubectl get services simple-jwt-api -o wide
+Now use the external IP url to test the app:
+
+export TOKEN=`curl -d '{"email":"<EMAIL>","password":"<PASSWORD>"}' -H "Content-Type: application/json" -X POST <EXTERNAL-IP URL>/auth  | jq -r '.token'`
+curl --request GET '<EXTERNAL-IP URL>/contents' -H "Authorization: Bearer ${TOKEN}" | jq 
+
+
 
 

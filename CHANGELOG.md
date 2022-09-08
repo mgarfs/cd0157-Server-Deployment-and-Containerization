@@ -198,12 +198,10 @@ aws ssm get-parameter --name JWT_SECRET
   - Review the resources - DONE
   - Create Stack - DONE 
 
-### 6. Create a CodeBuild stage which will build, test, and deploy your code
+### 6. Create a CodeBuild stage which will build, test, and deploy your code - DONE
 
 * Configure `buildspec.yml` - DONE
-
-
-* Build and deploy
-* Finally, you will trigger the build based on a Github commit.
+* Build and deploy - DONE
+* Finally, you will trigger the build based on a Github commit. - TODO
 
 

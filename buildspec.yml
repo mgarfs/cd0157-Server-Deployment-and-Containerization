@@ -33,6 +33,8 @@ phases:
       - apt-get update && apt-get -y install jq  && pip install --upgrade awscli
   pre_build:
       commands:
+        - pip install -r requirements.txt 
+        - python -m pytest test_main.py
         - TAG="$REPOSITORY_NAME.$REPOSITORY_BRANCH.$ENVIRONMENT_NAME.$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
         - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$TAG"'@' simple_jwt_api.yml
         - $(aws ecr get-login --no-include-email)
@@ -48,12 +50,6 @@ phases:
       - echo $EKS_CLUSTER_NAME
       - echo $EKS_KUBECTL_ROLE_ARN
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --role-arn $EKS_KUBECTL_ROLE_ARN
-      # - export AWS_ACCESS_KEY_ID=AKIAUUXAVZXEQZRZMIOJ
-      # - export AWS_SECRET_ACCESS_KEY=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
-      # - export AWS_DEFAULT_REGION=us-east-2
-      # - export SIMPLE_JWT_API_TOKEN=`aws-iam-authenticator token -i simple_jwt_api | jq . | grep token | sed 's/.*"token". "\(.*\)"/\1/'`
-      # - echo $SIMPLE_JWT_API_TOKEN
-      # - aws-iam-authenticator verify -t $SIMPLE_JWT_API_TOKEN -i simple_jwt_api
       - kubectl apply -f simple_jwt_api.yml 
       - printf '[{"name":"simple_jwt_api","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json
 artifacts:

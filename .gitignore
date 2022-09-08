@@ -29,6 +29,8 @@ htmlcov/
 .direnv
 
 .github/**
+eks_creation*.log
 
 # Downloadable executable
 aws-iam-authenticator
+

@@ -202,17 +202,22 @@ aws ssm get-parameter --name JWT_SECRET
 
 * Configure `buildspec.yml` - DONE
 * Build and deploy - DONE
-* Finally, you will trigger the build based on a Github commit. - IN PROGRESS
+* Finally, you will trigger the build based on a Github commit. - DONE
 
 
 ### 7. Test your Endpoint
 
 * To test your API endpoints, get the external IP for your service - TODO - `kubectl get services simple-jwt-api -o wide`
 
-* Now use the external IP url to test the app - TODO:
 ```
-export TOKEN=`curl -d '{"email":"<EMAIL>","password":"<PASSWORD>"}' -H "Content-Type: application/json" -X POST <EXTERNAL-IP URL>/auth  | jq -r '.token'`
-curl --request GET '<EXTERNAL-IP URL>/contents' -H "Authorization: Bearer ${TOKEN}" | jq 
+NAME             TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)        AGE   SELECTOR
+simple-jwt-api   LoadBalancer   10.100.237.199   ad30f329531d54ad0a08f7e2fdfcb9ac-1098447498.us-east-2.elb.amazonaws.com   80:31366/TCP   51m   app=simple-jwt-api
+```
+
+* Now use the external IP url to test the app - DONE:
+```
+export TOKEN=`curl -d '{"email":"<EMAIL>","password":"<PASSWORD>"}' -H "Content-Type: application/json" -X POST ad30f329531d54ad0a08f7e2fdfcb9ac-1098447498.us-east-2.elb.amazonaws.com/auth  | jq -r '.token'`
+curl --request GET 'ad30f329531d54ad0a08f7e2fdfcb9ac-1098447498.us-east-2.elb.amazonaws.com/contents' -H "Authorization: Bearer ${TOKEN}" | jq 
 ```
 
 

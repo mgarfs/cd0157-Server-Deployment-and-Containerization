@@ -26,7 +26,7 @@ def test_health(client):
     response = client.get('/')
     assert response.status_code == 200
     assert response.json == 'Healthy'
-    assert False
+    # assert False - uncomment this to have a failing test
 
 
 def test_auth(client):

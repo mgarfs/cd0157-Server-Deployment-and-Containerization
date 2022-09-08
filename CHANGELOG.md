@@ -220,6 +220,16 @@ export TOKEN=`curl -d '{"email":"<EMAIL>","password":"<PASSWORD>"}' -H "Content-
 curl --request GET 'ad30f329531d54ad0a08f7e2fdfcb9ac-1098447498.us-east-2.elb.amazonaws.com/contents' -H "Authorization: Bearer ${TOKEN}" | jq 
 ```
 
+### 8. Introduce a failing test - DONE (and UNDONE following)
 
+```
+=========================== short test summary info ============================
+FAILED test_main.py::test_health - assert False
+=================== 1 failed, 1 passed, 5 warnings in 0.20s ====================
+
+[Container] 2022/09/08 22:37:16 Command did not exit successfully python -m pytest test_main.py exit status 1
+[Container] 2022/09/08 22:37:16 Phase complete: PRE_BUILD State: FAILED
+[Container] 2022/09/08 22:37:16 Phase context status code: COMMAND_EXECUTION_ERROR Message: Error while executing command: python -m pytest test_main.py. Reason: exit status 1
+```
 
 
